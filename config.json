@@ -1,0 +1,17 @@
+{
+  "secret": "cef2a9d2-cc10-40a8-9d5f-8f6d4c141ab6",
+  "port": 8080,
+  "db": {
+    "dialect": "postgres",
+    "user": "user",
+    "password": "password",
+    "host": "host",
+    "port": 3306,
+    "db": "db"
+  },
+  "email": {
+    "user": "kiup@gmail.com",
+    "password": "password"
+  },
+  "SALT_ROUNDS": 12
+}
