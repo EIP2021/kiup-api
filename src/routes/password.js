@@ -8,7 +8,6 @@ const error = require('../error');
 const unauth = require('../unauthentified');
 const config = require('../../config.json');
 
-const SALT_ROUNDS = 12;
 const router = express.Router();
 const transport = nodemailer.createTransport({
   service: 'gmail',
@@ -78,7 +77,7 @@ router.post('/password/reset', async (req, res) => {
       console.log(user.tokenExpires, Date.now());
       return error(401, 'Token expiré.', res);
     }
-    const hash = await bcrypt.hash(password, SALT_ROUNDS);
+    const hash = await bcrypt.hash(password, config.SALT_ROUNDS);
     await user.update({
       password: hash,
       token: null,
