@@ -1,0 +1,17 @@
+{
+  "secret": "secret",
+  "port": 8080,
+  "db": {
+    "dialect": "mysql",
+    "user": "user",
+    "password": "password",
+    "host": "host",
+    "port": 9999,
+    "db": "db"
+  },
+  "email": {
+    "user": "kiup@gmail.com",
+    "password": "password"
+  },
+  "SALT_ROUNDS": 12
+}
