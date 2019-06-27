@@ -17,7 +17,7 @@ router.post('/register', async (req, res) => {
     return error(400, 'Invalid email', res);
   }
   if (password.trim() !== '' && password.match(passwordReg) === null) {
-    return (error(400, 'Le mot de passe doit contenir au moins 8 caracteres et comporter des lettres majusucules et minuscules ainsi que des chiffres', res));
+    return (error(400, 'Le mot de passe doit contenir au moins 8 caracteres et comporter des lettres majuscules et minuscules ainsi que des chiffres', res));
   }
   try {
     const hash = await bcrypt.hash(password, config.SALT_ROUNDS);
@@ -60,7 +60,7 @@ router.post('/login', async (req, res) => {
   res.status(200).json({
     error: false,
     token: jwt.sign({ email, id: user.id }, config.secret),
-    user,
+    email: user.email,
   });
   return 0;
 });
