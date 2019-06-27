@@ -13,7 +13,7 @@ const transport = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: config.email.user,
-    pass: config.email.pass,
+    pass: config.email.password,
   },
 });
 
@@ -43,7 +43,7 @@ router.post('/password/forgot', async (req, res) => {
       subject: 'Réinitalisation mot de passe KIUP',
       html: `Une demande de réinitalisation de mot de passe a été éffectuée pour votre email.<br></br>
       Cliquez sur le lien ci dessous pour changer votre mot de passe.<br></br>
-      <a href="http://localhost:3000/password/reset/${token}">http://localhost:3000/password/reset/${token}</a>`,
+      <a href="kiup://reset_password?token=${token}">Modifier mon mot de passe</a><br></br>`,
     };
     await transport.sendMail(mailOptions);
     return res.status(200).json({
@@ -51,7 +51,8 @@ router.post('/password/forgot', async (req, res) => {
       message: `Un email a été envoyé à ${email} pour reinitialiser le mot de passe.`,
     });
   } catch (err) {
-    return error(500, 'Invalid request', res);
+    console.error(err);
+    return error(500, 'Internal server error', res);
   }
 });
 
