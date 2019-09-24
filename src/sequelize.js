@@ -13,4 +13,10 @@ const sequelize = new Sequelize(config.db.db, config.db.user, config.db.password
   dialect: config.db.dialect,
 });
 
+sequelize.authenticate().then(() => {
+  console.log("Successfully connected to db");
+}).catch((err) => {
+  console.log(err);
+});
+
 module.exports = sequelize;

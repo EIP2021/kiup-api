@@ -13,5 +13,5 @@ module.exports = sequelize.define('recipe', {
 },
 {
   timestamps: false,
-  tableName: 'Recipe',
+  tableName: 'recipe',
 });
