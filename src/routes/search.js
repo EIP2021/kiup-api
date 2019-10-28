@@ -11,18 +11,6 @@ const jwtMiddleware = exjwt({
   secret: config.secret,
 });
 
-const splitArray = (array, page, pageSize) => {
-  const result = [];
-  const startingIndex = page * pageSize;
-  for (let i = 0; i < pageSize; i += 1) {
-    if (startingIndex + i >= array.length) {
-      return result;
-    }
-    result[i] = array[startingIndex + i];
-  }
-  return result;
-};
-
 const router = express.Router();
 
 //  Example request : /search?query=poulet&page=1&pageSize=10
@@ -32,8 +20,14 @@ router.get('/search', jwtMiddleware, async (req, res) => {
   if (!query || !page || !pageSize) {
     return error(400, 'Invalid request', res);
   }
+  const numberReg = /^\d+$/;
+  if (page.match(numberReg) === null || pageSize.match(numberReg) === null) {
+    return error(400, 'Invalid page or page size parameter', res);
+  }
   try {
-    const aliments = await models.Aliment.findAll({
+    const result = await models.Aliment.findAll({
+      limit: pageSize * 1,
+      offset: pageSize * (page - 1),
       attributes: {
         exclude: [
           'composition',
@@ -46,8 +40,6 @@ router.get('/search', jwtMiddleware, async (req, res) => {
       },
       raw: true,
     });
-    const currentPage = page - 1;
-    const result = splitArray(aliments, currentPage, pageSize);
     res.json({
       error: false,
       result,
