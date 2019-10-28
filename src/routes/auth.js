@@ -17,11 +17,33 @@ router.post('/register', async (req, res) => {
     return error(400, 'Adresse email invalide', res);
   }
   if (password.trim() !== '' && password.match(passwordReg) === null) {
-    return (error(400, 'Le mot de passe doit contenir au moins 8 caracteres et comporter des majuscules, minuscules et chiffres', res));
+    return error(
+      400,
+      'Le mot de passe doit contenir au moins 8 caracteres et comporter des majuscules, minuscules et chiffres',
+      res,
+    );
+  }
+  if (
+    !info
+    || !info.firstName
+    || !info.lastName
+    || !info.gender
+    || !info.birthdate
+    || !info.weight
+  ) {
+    return error(400, 'Informations supplementaires incomplètes', res);
   }
   try {
+    const user = await models.User.findOne({
+      where: {
+        email,
+      },
+    });
+    if (user) {
+      return error(403, 'Cette adresse email est déjà utilisé', res);
+    }
     const hash = await bcrypt.hash(password, config.SALT_ROUNDS);
-    const user = await models.User.create({
+    const createdUser = await models.User.create({
       email,
       password: hash,
       token: null,
@@ -31,7 +53,7 @@ router.post('/register', async (req, res) => {
       id: user.id,
       ...info,
     });
-    if (!user || !userInfo) {
+    if (!createdUser || !userInfo) {
       throw new Error('Une erreur est survenue lors de la creation du compte');
     }
     return res.json({

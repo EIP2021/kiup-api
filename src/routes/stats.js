@@ -33,13 +33,13 @@ router.get('/stats', jwtMiddleware, async (req, res) => {
           date,
           stats: {
             potassium: 0, //  integers represent milligrams
-            sodium: 0,
+            salt: 0,
             phosphorus: 0,
-            protein: 0,
+            proteins: 0,
           },
         });
         if (!created) {
-          return error(500, 'Failed to create stat entry.');
+          return error(500, 'Failed to create stat entry.', res);
         }
         return res.json({
           error: false,
@@ -50,7 +50,8 @@ router.get('/stats', jwtMiddleware, async (req, res) => {
         error: false,
         stats: stats.stats,
       });
-    } else { // TODO : add week and month scope.
+    } else {
+      // TODO : add week and month scope.
       return error(400, 'Unsupported scope', res);
     }
     return 0;
@@ -73,16 +74,36 @@ router.post('/stats', jwtMiddleware, async (req, res) => {
         date,
       },
     });
-    await currentStats.update({
-      stats,
+    if (!currentStats) {
+      const createdStats = await models.Consumption.create({
+        userId: id,
+        date,
+        stats,
+      });
+      if (!createdStats) {
+        return error(500, 'Failed to create stat entry.', res);
+      }
+      return res.json({
+        error: false,
+        stats: createdStats.stats,
+      });
+    }
+
+    const updatedStats = await currentStats.update({
+      stats: {
+        potassium: stats.potassium + currentStats.stats.potassium,
+        phosphorus: stats.phosphorus + currentStats.stats.phosphorus,
+        proteins: stats.proteins + currentStats.stats.proteins,
+        salt: stats.salt + currentStats.stats.salt,
+      },
     });
     return res.json({
       error: false,
-      stats,
+      stats: updatedStats.stats,
     });
   } catch (err) {
     console.error(err);
-    return (500, 'Internal server error', res);
+    return error(500, 'Internal server error', res);
   }
 });
 
