@@ -34,6 +34,7 @@ router.post('/register', async (req, res) => {
     return error(400, 'Informations supplementaires incomplètes', res);
   }
   try {
+    info.dateOfBirth = info.birthdate;
     const user = await models.User.findOne({
       where: {
         email,
@@ -50,7 +51,7 @@ router.post('/register', async (req, res) => {
       tokenExpires: null,
     });
     const userInfo = await models.UserInfo.create({
-      id: user.id,
+      id: createdUser.id,
       ...info,
     });
     if (!createdUser || !userInfo) {
