@@ -8,10 +8,10 @@ const search = require('./search');
 
 const router = express.Router();
 
-router.use(auth);
+router.use('/user/', auth);
 router.use(password);
-router.use(profile);
-router.use(stats);
-router.use(search);
+router.use('/user/', profile);
+router.use('/user/', stats);
+router.use('/aliment/', search);
 
 module.exports = router;

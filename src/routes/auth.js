@@ -8,6 +8,19 @@ const config = require('../../config.json');
 
 const router = express.Router();
 
+/**
+ * This is an attempt to generate swagger documentation. Todo
+ * @route POST /user/register
+ * @group User - Operations about user
+ * @param {string} email.body.required - Registration email
+ * @produces application/json
+ * @consumes application/json
+ * @returns {object} 200 - {
+ *    error: false,
+ *    token: 'token',
+ * }
+ * @returns {Error}  default - Unexpected error
+ */
 router.post('/register', async (req, res) => {
   const { email, password, info } = req.body;
   const emailReg = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

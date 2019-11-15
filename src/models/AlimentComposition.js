@@ -1,15 +1,15 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../sequelize');
 
-module.exports = sequelize.define('aliment', {
+module.exports = sequelize.define('alimentComposition', {
   alim_code: {
     type: Sequelize.INTEGER,
     primaryKey: true,
   },
-  alim_nom_fr: Sequelize.CHAR,
-  alim_ssgrp_code: Sequelize.INTEGER,
+  name: Sequelize.CHAR,
+  composition: Sequelize.JSON,
 },
 {
   timestamps: false,
-  tableName: 'Aliments',
+  tableName: 'AlimentsComposition',
 });
