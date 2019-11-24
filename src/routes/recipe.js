@@ -1,12 +1,8 @@
 const express = require('express');
-const exjwt = require('express-jwt');
+
 const models = require('../models');
 const error = require('../error');
 const config = require('../../config.json');
-
-const jwtMiddleware = exjwt({
-    secret: config.secret,
-});
 
 const router = express.Router();
 
@@ -31,12 +27,9 @@ router.post('/', jwtMiddleware, async (req, res) => {
   }
   try {
     const recipe = await models.Recipe.create({
-      uid: req.user.id,
-      name: req.body.name,
-      description: req.body.description,
-      time: req.body.time,
-      ingredients: req.body.ingredients,
-      steps: req.body.steps,
+      name: recipeObj.name,
+      description: recipeObj.description,
+      steps: JSON.stringify(recipeObj.steps),
     });
     if (!recipe) {
       throw new Error('Couldn\'t create recipe');
@@ -61,22 +54,22 @@ router.get('/', async (req, res) => {
       error: false,
       body: recipes,
     });
-    return 0;
   } catch (err) {
     console.error(err);
     return error(500, 'Internal server error', res);
   }
+  return 0;
 });
 
 router.get('/get/:id', async (req, res) => {
   try {
-    const recipe = await models.Recipe.findOne({
+    const recipes = await models.Recipe.findAll({
       where: {
-        id: req.params.id,
+        name: req.params.recipe,
       },
     });
-    if (!recipe) {
-      throw new Error('Couldn\'t get recipe');
+    if (!recipes || recipes.length === 0) {
+      throw new Error('Couldn\'t get recipes');
     }
     res.status(200).json({
       error: false,
@@ -164,6 +157,7 @@ router.post('/edit', jwtMiddleware, async (req, res) => {
     console.error(err);
     return error(500, 'Internal server error', res);
   }
+  return 0;
 });
 
 router.post('/fav/:id', jwtMiddleware, async (req, res) => {
