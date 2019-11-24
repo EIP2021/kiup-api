@@ -18,7 +18,7 @@ isRecipeValid = (recipe) => {
     return true;
 }
 
-router.post('/recipe', jwtMiddleware, async (req, res) => {
+router.post('/', jwtMiddleware, async (req, res) => {
   const { id } = req.user;
   if (!id) {
       return error(401, 'Invalid request', res);
@@ -51,7 +51,7 @@ router.post('/recipe', jwtMiddleware, async (req, res) => {
   }
 });
 
-router.get('/recipe', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const recipes = await models.Recipe.findAll();
     if (!recipes) {
@@ -68,7 +68,7 @@ router.get('/recipe', async (req, res) => {
   }
 });
 
-router.get('/recipe/get/:id', async (req, res) => {
+router.get('/get/:id', async (req, res) => {
   try {
     const recipe = await models.Recipe.findOne({
       where: {
@@ -89,7 +89,7 @@ router.get('/recipe/get/:id', async (req, res) => {
   }
 });
 
-router.get('/recipe/delete/:id', jwtMiddleware, async (req, res) => {
+router.get('/delete/:id', jwtMiddleware, async (req, res) => {
   const { id } = req.user;
   if (!id) {
     return error(401, 'Invalid request', res);
@@ -113,7 +113,7 @@ router.get('/recipe/delete/:id', jwtMiddleware, async (req, res) => {
   }
 });
 
-router.get('/recipe/my', jwtMiddleware, async(req, res) => {
+router.get('/my', jwtMiddleware, async(req, res) => {
   const { id } = req.user;
   if (!id) {
     return error(401, 'Invalid request', res);
@@ -134,7 +134,7 @@ router.get('/recipe/my', jwtMiddleware, async(req, res) => {
   }
 });
 
-router.post('/recipe/edit', jwtMiddleware, async (req, res) => {
+router.post('/edit', jwtMiddleware, async (req, res) => {
   const { id } = req.user;
   if (!id) {
       return error(401, 'Invalid request', res);
