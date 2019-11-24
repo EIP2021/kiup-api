@@ -8,8 +8,7 @@
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.2",
-    "nodemon": "^1.19.1",
-    "ws": "3.3.2"
+    "nodemon": "^1.19.1"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",

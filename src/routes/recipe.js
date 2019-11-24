@@ -1,42 +1,23 @@
 const express = require('express');
-const exjwt = require('express-jwt');
+
 const models = require('../models');
 const error = require('../error');
 const config = require('../../config.json');
 
-const jwtMiddleware = exjwt({
-    secret: config.secret,
-});
-
 const router = express.Router();
 
-isRecipeValid = (recipe) => {
-  if (!recipe.uid || !recipe.name || !recipe.description || !Array.isArray(recipe.time) ||
-    !Array.isArray(recipe.steps) || !Array.isArray(recipe.ingredients)) {
-      return false;
-    }
-    return true;
-}
-
-router.post('/recipe', jwtMiddleware, async (req, res) => {
-  const { id } = req.user;
-  if (!id) {
-      return error(401, 'Invalid request', res);
-  }
-  if (!req.body) {
-    return error(401, 'Invalid request');
-  }
-  if (!isRecipeValid(req.body)) {
-      throw new Error('recipe should contain at least a name, a description, ingredients, times, and steps');
+router.post('/recipe', async (req, res) => {
+  console.log(req.body);
+  const recipeObj = req.body.recipe;
+  if (!req.body || !recipeObj.name || !recipeObj.description || !recipeObj.steps
+    || !Array.isArray(recipeObj.steps)) {
+    return error(400, 'recipe should containe at least a name, a description, and steps', res);
   }
   try {
     const recipe = await models.Recipe.create({
-      uid: req.user.id,
-      name: req.body.name,
-      description: req.body.description,
-      time: req.body.time,
-      ingredients: req.body.ingredients,
-      steps: req.body.steps,
+      name: recipeObj.name,
+      description: recipeObj.description,
+      steps: JSON.stringify(recipeObj.steps),
     });
     if (!recipe) {
       throw new Error('Couldn\'t create recipe');
@@ -61,109 +42,33 @@ router.get('/recipe', async (req, res) => {
       error: false,
       body: recipes,
     });
-    return 0;
   } catch (err) {
     console.error(err);
     return error(500, 'Internal server error', res);
   }
+  return 0;
 });
 
-router.get('/recipe/get/:id', async (req, res) => {
-  try {
-    const recipe = await models.Recipe.findOne({
-      where: {
-        id: req.params.id,
-      },
-    });
-    if (!recipe) {
-      throw new Error('Couldn\'t get recipe');
-    }
-    res.status(200).json({
-      error: false,
-      body: recipe,
-    });
-    return 0;
-  } catch (err) {
-    console.error(err);
-    return error(500, 'Internal server error', res);
-  }
-});
-
-router.get('/recipe/delete/:id', jwtMiddleware, async (req, res) => {
-  const { id } = req.user;
-  if (!id) {
-    return error(401, 'Invalid request', res);
-  }
-  try {
-    const recipe = await models.Recipe.findOne({
-      where: {
-        id: req.params.id,
-      },
-    });
-    if (!recipe)
-      throw new Error('Couldn\'t delete recipe');
-    res.status(200).json({
-      error: false,
-      message: "Recipe succesfuly deleted",
-    });
-    return 0;
-  } catch (err) {
-    console.error(err);
-    return error(500, 'Internal server error', res);
-  }
-});
-
-router.get('/recipe/my', jwtMiddleware, async(req, res) => {
-  const { id } = req.user;
-  if (!id) {
-    return error(401, 'Invalid request', res);
-  }
+router.get('/recipe/:recipe', async (req, res) => {
+  console.log(req.params.recipe);
   try {
     const recipes = await models.Recipe.findAll({
       where: {
-        uid: id,
-      }
+        name: req.params.recipe,
+      },
     });
-    res.json({
-      error: false,
-      recipes: recipes,
-    });
-  } catch (err) {
-    console.log(err);
-    return error(500, 'Internal server error', res);
-  }
-});
-
-router.post('/recipe/edit', jwtMiddleware, async (req, res) => {
-  const { id } = req.user;
-  if (!id) {
-      return error(401, 'Invalid request', res);
-  }
-  if (!isRecipeValid(req.body)) {
-      throw new Error('recipe should contain at least a name, a description, ingredients, times, and steps');
-  }
-  try {
-    const recipe = await models.Recipe.findOne({
-      where:
-        { id: req.body.id }
-    });
-    if (!recipe) {
-      throw new Error('Couldn\'t find recipe');
+    if (!recipes || recipes.length === 0) {
+      throw new Error('Couldn\'t get recipes');
     }
-    recipe.update({
-      name: req.body.name,
-      description: req.body.description,
-      ingredients: req.body.ingredients,
-      steps: req.body.steps,
-    });
-    return res.json({
+    res.status(200).json({
       error: false,
-      message: 'Recipe successfully updated',
+      body: recipes,
     });
   } catch (err) {
     console.error(err);
     return error(500, 'Internal server error', res);
   }
+  return 0;
 });
 
 module.exports = router;

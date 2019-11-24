@@ -7,11 +7,11 @@ module.exports = sequelize.define('recipe', {
     primaryKey: true,
     autoIncrement: true,
   },
-  uid: Sequelize.INTEGER,
   name: Sequelize.CHAR,
   description: Sequelize.CHAR,
-  time: Sequelize.JSON,
-  ingredients: Sequelize.JSON,
-  steps: Sequelize.JSON },
-  { timestamps: false,
+  steps: Sequelize.TEXT,
+},
+{
+  timestamps: false,
+  tableName: 'recipe',
 });
