@@ -164,7 +164,6 @@ router.post('/edit', jwtMiddleware, async (req, res) => {
     console.error(err);
     return error(500, 'Internal server error', res);
   }
-  return 0;
 });
 
 router.post('/fav/:id', jwtMiddleware, async (req, res) => {
