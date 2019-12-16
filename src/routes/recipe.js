@@ -166,4 +166,38 @@ router.post('/edit', jwtMiddleware, async (req, res) => {
   }
 });
 
+router.post('/fav/:id', jwtMiddleware, async (req, res) => {
+  const { id } = req.user;
+  if (!id) {
+      return error(401, 'Invalid request', res);
+  }
+  try {
+    const recipeFavorite = await models.RecipeFavorite.findOrCreate({
+      where:
+        { uid: id, rid: req.params.id}
+    });
+    if (!recipeFavorite) {
+      throw new Error('Couldn\'t findorcreate recipeFavorite');
+    }
+    if (recipeFavorite[1] === false) {
+      await models.RecipeFavorite.destroy({
+        where:
+        { uid: 1, rid: req.params.id}
+      });
+      return res.json({
+        error: false,
+        message: 'Recipe successfully deleted from favorites'
+      });
+    } else {
+      return res.json({
+        error: false,
+        message: 'Recipe successfully added to favorites'
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return error(500, 'Internal server error', res);
+  }
+});
+
 module.exports = router;
