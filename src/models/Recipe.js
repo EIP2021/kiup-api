@@ -1,17 +1,33 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../sequelize');
 
-module.exports = sequelize.define('recipe', {
+module.exports = sequelize.define('Recipe', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  uid: Sequelize.INTEGER,
-  name: Sequelize.CHAR,
-  description: Sequelize.CHAR,
-  time: Sequelize.JSON,
+  uid: {
+    type: Sequelize.INTEGER,
+    notNull: true,
+  },
+  name: {
+    type: Sequelize.CHAR,
+    notEmpty: true,
+  },
+  description: {
+    type: Sequelize.CHAR,
+    notEmpty: true,
+  },
+  prepTime: {
+    type: Sequelize.INTEGER,
+    notNull: true
+  },
+  cookTime: {
+    type: Sequelize.INTEGER,
+  },
   ingredients: Sequelize.JSON,
-  steps: Sequelize.JSON },
-  { timestamps: false,
+  steps: Sequelize.JSON,
+  createdAt: Sequelize.TIME,
+  updatedAt: Sequelize.TIME,
 });
