@@ -6,6 +6,7 @@ const Aliment = require('./Aliment');
 const Recipe = require('./Recipe');
 const RecipeFavorite = require('./RecipeFavorite');
 const RecipeRating = require('./RecipeRating');
+const History = require('./History');
 
 Aliment.belongsTo(AlimentComposition, {
   foreignKey: 'alim_code',
@@ -24,4 +25,5 @@ module.exports = {
   Recipe,
   RecipeFavorite,
   RecipeRating,
+  History,
 };
