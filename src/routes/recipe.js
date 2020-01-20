@@ -1,5 +1,6 @@
 const express = require('express');
 const exjwt = require('express-jwt');
+const sequelize = require('sequelize');
 const models = require('../models');
 const error = require('../error');
 const config = require('../../config.json');
@@ -11,8 +12,9 @@ const jwtMiddleware = exjwt({
 const router = express.Router();
 
 isRecipeValid = (recipe) => {
-  if (!recipe.uid || !recipe.name || !recipe.description || !Array.isArray(recipe.time) ||
-    !Array.isArray(recipe.steps) || !Array.isArray(recipe.ingredients)) {
+  console.log(recipe);
+  if (!recipe.name || !recipe.description || !recipe.prepTime
+    || !Array.isArray(recipe.steps) || !Array.isArray(recipe.ingredients)) {
       return false;
     }
     return true;
@@ -26,15 +28,16 @@ router.post('/', jwtMiddleware, async (req, res) => {
   if (!req.body) {
     return error(401, 'Invalid request');
   }
-  if (!isRecipeValid(req.body)) {
-      throw new Error('recipe should contain at least a name, a description, ingredients, times, and steps');
-  }
   try {
+    if (!isRecipeValid(req.body)) {
+        throw new Error('recipe should contain at least a name, a description, ingredients, times, and steps');
+    }
     const recipe = await models.Recipe.create({
-      uid: req.user.id,
+      uid: id,
       name: req.body.name,
       description: req.body.description,
-      time: req.body.time,
+      prepTime: req.body.prepTime,
+      cookTime: req.body.cookTime,
       ingredients: req.body.ingredients,
       steps: req.body.steps,
     });
@@ -57,11 +60,10 @@ router.get('/', async (req, res) => {
     if (!recipes) {
       throw new Error('Couldn\'t get recipes');
     }
-    res.status(200).json({
+    return res.json({
       error: false,
       body: recipes,
     });
-    return 0;
   } catch (err) {
     console.error(err);
     return error(500, 'Internal server error', res);
@@ -78,35 +80,32 @@ router.get('/get/:id', async (req, res) => {
     if (!recipe) {
       throw new Error('Couldn\'t get recipe');
     }
-    res.status(200).json({
+    return res.json({
       error: false,
       body: recipe,
     });
-    return 0;
   } catch (err) {
     console.error(err);
     return error(500, 'Internal server error', res);
   }
 });
 
-router.get('/delete/:id', jwtMiddleware, async (req, res) => {
+router.post('/delete/:id', jwtMiddleware, async (req, res) => {
   const { id } = req.user;
   if (!id) {
     return error(401, 'Invalid request', res);
   }
   try {
-    const recipe = await models.Recipe.findOne({
+    await models.Recipe.destroy({
       where: {
         id: req.params.id,
+        uid: id,
       },
     });
-    if (!recipe)
-      throw new Error('Couldn\'t delete recipe');
-    res.status(200).json({
+    return res.json({
       error: false,
-      message: "Recipe succesfuly deleted",
-    });
-    return 0;
+      message: "Recipe successfully deleted",
+    })
   } catch (err) {
     console.error(err);
     return error(500, 'Internal server error', res);
@@ -124,7 +123,7 @@ router.get('/my', jwtMiddleware, async(req, res) => {
         uid: id,
       }
     });
-    res.json({
+    return res.json({
       error: false,
       recipes: recipes,
     });
@@ -134,18 +133,18 @@ router.get('/my', jwtMiddleware, async(req, res) => {
   }
 });
 
-router.post('/edit', jwtMiddleware, async (req, res) => {
+router.post('/edit/:id', jwtMiddleware, async (req, res) => {
   const { id } = req.user;
   if (!id) {
       return error(401, 'Invalid request', res);
   }
-  if (!isRecipeValid(req.body)) {
-      throw new Error('recipe should contain at least a name, a description, ingredients, times, and steps');
-  }
   try {
+    if (!isRecipeValid(req.body)) {
+        throw new Error('recipe should contain at least a name, a description, ingredients, times, and steps');
+    }
     const recipe = await models.Recipe.findOne({
       where:
-        { id: req.body.id }
+        { id: req.params.id, uid: id }
     });
     if (!recipe) {
       throw new Error('Couldn\'t find recipe');
@@ -153,6 +152,8 @@ router.post('/edit', jwtMiddleware, async (req, res) => {
     recipe.update({
       name: req.body.name,
       description: req.body.description,
+      prepTime: req.body.prepTime,
+      cookTime: req.body.cookTime,
       ingredients: req.body.ingredients,
       steps: req.body.steps,
     });
@@ -182,7 +183,7 @@ router.post('/fav/:id', jwtMiddleware, async (req, res) => {
     if (recipeFavorite[1] === false) {
       await models.RecipeFavorite.destroy({
         where:
-        { uid: 1, rid: req.params.id}
+        { uid: id, rid: req.params.id}
       });
       return res.json({
         error: false,
@@ -196,6 +197,93 @@ router.post('/fav/:id', jwtMiddleware, async (req, res) => {
     }
   } catch (err) {
     console.error(err);
+    return error(500, 'Internal server error', res);
+  }
+});
+
+router.get('/fav', jwtMiddleware, async (req, res) => {
+  const { id } = req.user;
+  if (!id) {
+      return error(401, 'Invalid request', res);
+  }
+  try {
+    const recipeFavorite = await models.RecipeFavorite.findAll({
+      where:
+        { uid: id }
+    });
+    if (!recipeFavorite) {
+      throw new Error('Couldn\'t find favortie recipes');
+    }
+    return res.json({
+      error: false,
+      body: recipeFavorite,
+    });
+  } catch (err) {
+    console.error(err);
+    return error(500, 'Internal server error', res);
+  }
+});
+
+router.post('/rate/:id/:rating', jwtMiddleware, async (req, res) => {
+  const { id } = req.user;
+  if (!id) {
+    return error(401, 'Invalid request', res);
+  }
+  try {
+    recipeRating = await models.RecipeRating.findOne({
+      where: {
+        uid: id,
+        rid: req.params.id
+      },
+    });
+    if (!recipeRating) {
+      recipeRating = await models.RecipeRating.create({
+          uid: id,
+          rid: req.params.id,
+          rating: req.params.rating
+      });
+      if (!recipeRating)
+        throw new Error('Couldn\'t create recipe rating');
+      return res.json({
+        error: false,
+        message: 'Recipe rating successfully created',
+        body: {'rating': recipeRating.rating}
+      });
+    } else {
+      recipeRating.update({
+        rating: req.params.rating
+      });
+      if (!recipeRating)
+        throw new Error('Couldn\'t update recipe rating');
+      return res.json({
+        error: false,
+        message: 'Recipe rating successfully updated',
+        body: {'rating': recipeRating.rating}
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return error(500, 'Internal server error', res);
+  }
+});
+
+router.get('/rating/:id', async (req, res) => {
+  try {
+    const recipeRating = await models.RecipeRating.findAll({
+      where: {
+        rid: req.params.id
+      },
+      attributes: [[sequelize.fn('avg', sequelize.col('rating')), 'rating']],
+    });
+    if (!recipeRating)
+      throw new Error('Couldn\'t get recipe rating');
+    console.log(recipeRating);
+    return res.json({
+      error: false,
+      body: {'rating': recipeRating[0].dataValues.rating},
+    });
+  } catch (err) {
+    console.log(err);
     return error(500, 'Internal server error', res);
   }
 });
