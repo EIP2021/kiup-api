@@ -2,11 +2,16 @@ const express = require('express');
 const uuid = require('uuid/v4');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
+const exjwt = require('express-jwt');
 
 const models = require('../models');
 const error = require('../error');
 const unauth = require('../unauthentified');
 const config = require('../../config.json');
+
+const jwtMiddleware = exjwt({
+  secret: config.secret,
+});
 
 const router = express.Router();
 const transport = nodemailer.createTransport({
@@ -83,6 +88,43 @@ router.post('/password/reset', async (req, res) => {
       password: hash,
       token: null,
       tokenExpires: null,
+    });
+    return res.status(200).json({
+      error: false,
+      message: 'Mot de passe modifié',
+    });
+  } catch (err) {
+    console.error(err);
+    return error(500, 'Internal server error', res);
+  }
+});
+
+router.post('/password/change', jwtMiddleware, async (req, res) => {
+  const { oldPassword, password } = req.body;
+  const { id } = req.user;
+  if (!req.body || !oldPassword || !password) {
+    return error(400, 'Invalid request', res);
+  }
+  const passwordReg = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+  if (password.trim() !== '' && password.match(passwordReg) === null) {
+    return (error(400, 'Le mot de passe doit contenir au moins 8 caracteres et comporter des lettres majuscules et minuscules ainsi que des chiffres', res));
+  }
+  try {
+    const user = await models.User.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!user) {
+      return error(401, 'Utilisateur introuvable.', res);
+    }
+    const result = await bcrypt.compare(oldPassword, user.password);
+    if (!result) {
+      return (error(403, 'Mot de passe invalide', res));
+    }
+    const hash = await bcrypt.hash(password, config.SALT_ROUNDS);
+    await user.update({
+      password: hash,
     });
     return res.status(200).json({
       error: false,

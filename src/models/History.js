@@ -9,7 +9,7 @@ module.exports = sequelize.define('history', {
   },
   userId: Sequelize.INTEGER,
   alimCode: Sequelize.INTEGER,
-  barcode: Sequelize.CHAR,
+  barcode: Sequelize.STRING,
   recipeId: Sequelize.INTEGER,
   createdAt: Sequelize.DATE,
 },
