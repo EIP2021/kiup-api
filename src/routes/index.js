@@ -8,6 +8,7 @@ const search = require('./search');
 const recipe = require('./recipe');
 const consume = require('./consume');
 const aliment = require('./aliment');
+const image = require('./image');
 
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.use('/user/', stats);
 router.use('/aliment/', search);
 router.use('/aliment/', aliment);
 router.use('/recipe/', recipe);
+router.use('/image/', image);
 router.use(consume);
 
 module.exports = router;

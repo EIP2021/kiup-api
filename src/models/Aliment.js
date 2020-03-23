@@ -8,6 +8,7 @@ module.exports = sequelize.define('aliment', {
   },
   alim_nom_fr: Sequelize.CHAR,
   alim_ssgrp_code: Sequelize.INTEGER,
+  alim_image: Sequelize.STRING,
 },
 {
   timestamps: false,
