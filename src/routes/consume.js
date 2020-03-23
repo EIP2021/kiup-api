@@ -64,7 +64,7 @@ router.delete('/history/:entryId', jwtMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    return error(500, "Internal server error", res);
+    return error(500, 'Internal server error', res);
   }
 });
 
@@ -77,13 +77,13 @@ router.get('/history', jwtMiddleware, async (req, res) => {
     const history = await models.History.findAll({
       where: {
         userId: id,
-      }
+      },
     });
     console.log(history);
     return res.json({
       error: false,
       history,
-    });  
+    });
   } catch (err) {
     console.error(err);
     return error(500, 'Internal server error', res);
