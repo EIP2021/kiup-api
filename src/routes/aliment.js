@@ -11,6 +11,18 @@ const jwtMiddleware = exjwt({
 
 const router = express.Router();
 
+const parsAlim = (result) => {
+  const neededNutrient = {};
+  Object.keys(result.composition).forEach((key) => {
+    const nutrient = result.composition[key].name;
+    if (nutrient === 'protéines (g/100g)' || nutrient === 'potassium (mg/100g)'
+        || nutrient === 'phosphore (mg/100g)' || nutrient === 'sel chlorure de sodium (g/100g)') {
+      neededNutrient[result.composition[key].name] = result.composition[key].teneur;
+    }
+  });
+  return neededNutrient;
+};
+
 //TODO : Maybe add alim group name? not sure if useful
 router.get('/:id', jwtMiddleware, async (req, res) => {
   const numberReg = /^\d+$/;
@@ -34,9 +46,10 @@ router.get('/:id', jwtMiddleware, async (req, res) => {
       },
       raw: true,
     });
+    const neededNutrient = parsAlim(result);
     res.json({
       error: false,
-      result,
+      neededNutrient,
     });
   } catch (err) {
     console.error(err);
