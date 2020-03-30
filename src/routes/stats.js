@@ -1,6 +1,6 @@
 const express = require('express');
 const exjwt = require('express-jwt');
-
+const Op = require('sequelize');
 const models = require('../models');
 const error = require('../error');
 const config = require('../../config.json');
@@ -20,40 +20,74 @@ router.get('/stats', jwtMiddleware, async (req, res) => {
     return error(401, 'Invalid request', res);
   }
   try {
+    let stats = [];
     if (scope === 'day') {
-      const stats = await models.Consumption.findOne({
+      stats = await models.Consumption.findOne({
         where: {
           userId: id,
           date,
         },
       });
-      if (!stats) {
-        const created = await models.Consumption.create({
-          userId: id,
-          date,
-          stats: {
-            potassium: 0, //  integers represent milligrams
-            salt: 0,
-            phosphorus: 0,
-            proteins: 0,
-          },
-        });
-        if (!created) {
-          return error(500, 'Failed to create stat entry.', res);
-        }
-        return res.json({
-          error: false,
-          stats: created.stats,
-        });
+      if (stats) {
+        stats = stats.stats;
       }
-      res.json({
-        error: false,
-        stats: stats.stats,
+    } else if (scope === 'month') {
+      const firstDayOfMonth = new Date(date);
+      const lastDayOfMonth = new Date(firstDayOfMonth.getFullYear(),
+        firstDayOfMonth.getMonth() + 1, 0);
+
+      const allConsumptions = await models.Consumption.findAll({
+        where: {
+          userId: id,
+        },
+      });
+
+      allConsumptions.forEach((element) => {
+        if (new Date(element.date) >= firstDayOfMonth && new Date(element.date) <= lastDayOfMonth) {
+          stats.push(element.stats);
+        }
+      });
+    } else if (scope === 'year') {
+      const lastDayOfYear = new Date(new Date(new Date(date)).getFullYear(), 11, 32);
+      const firstDayOfYear = new Date(new Date(new Date(date)).getFullYear(), 0, 1);
+
+      const allConsumptions = await models.Consumption.findAll({
+        where: {
+          userId: id,
+        },
+      });
+
+      allConsumptions.forEach((element) => {
+        if (new Date(element.date) >= firstDayOfYear && new Date(element.date) <= lastDayOfYear) {
+          stats.push(element.stats);
+        }
       });
     } else {
-      // TODO : add week and month scope.
       return error(400, 'Unsupported scope', res);
     }
+    if (!stats) {
+      const created = await models.Consumption.create({
+        userId: id,
+        date,
+        stats: {
+          potassium: 0, //  integers represent milligrams
+          salt: 0,
+          phosphorus: 0,
+          proteins: 0,
+        },
+      });
+      if (!created) {
+        return error(500, 'Failed to create stat entry.', res);
+      }
+      return res.json({
+        error: false,
+        stats: created.stats,
+      });
+    }
+    res.json({
+      error: false,
+      stats,
+    });
     return 0;
   } catch (err) {
     console.error(err);
