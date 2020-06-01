@@ -21,13 +21,14 @@ module.exports = sequelize.define('Recipe', {
   },
   prepTime: {
     type: Sequelize.INTEGER,
-    notNull: true
+    notNull: true,
   },
   cookTime: {
     type: Sequelize.INTEGER,
   },
   ingredients: Sequelize.JSON,
   steps: Sequelize.JSON,
-  createdAt: Sequelize.TIME,
-  updatedAt: Sequelize.TIME,
+},
+{
+  timestamps: false,
 });

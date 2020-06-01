@@ -19,7 +19,6 @@ module.exports = sequelize.define('RecipeRating', {
     max: 5,
   },
 },
-  {
-    timestamps: false
-  },
-);
+{
+  timestamps: false,
+});
