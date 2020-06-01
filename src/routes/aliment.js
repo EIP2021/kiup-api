@@ -12,12 +12,38 @@ const jwtMiddleware = exjwt({
 const router = express.Router();
 
 const parsAlim = (result) => {
-  const neededNutrient = {};
+  const neededNutrient = {
+    proteins: null,
+    potassium: null,
+    phosphorus: null,
+    salt: null,
+  };
+  var regExp = /\(([^)]+)\)/;
   Object.keys(result.composition).forEach((key) => {
     const nutrient = result.composition[key].name;
-    if (nutrient === 'protéines (g/100g)' || nutrient === 'potassium (mg/100g)'
-        || nutrient === 'phosphore (mg/100g)' || nutrient === 'sel chlorure de sodium (g/100g)') {
-      neededNutrient[result.composition[key].name] = result.composition[key].teneur;
+    if (nutrient === 'protéines (g/100g)') {
+      neededNutrient.proteins = {
+        quantity: parseFloat(result.composition[key].teneur.replace(/,/g, '.')) || 0,
+        unit: nutrient.match(regExp).pop()
+      };
+    }
+    if (nutrient === 'potassium (mg/100g)') {
+      neededNutrient.potassium = {
+        quantity: parseFloat(result.composition[key].teneur.replace(/,/g, '.')) || 0,
+        unit: nutrient.match(regExp).pop()
+      };
+    }
+    if (nutrient === 'phosphore (mg/100g)') {
+      neededNutrient.phosphorus = {
+        quantity: parseFloat(result.composition[key].teneur.replace(/,/g, '.')) || 0,
+        unit: nutrient.match(regExp).pop()
+      };
+    }
+    if (nutrient === 'sel chlorure de sodium (g/100g)') {
+      neededNutrient.salt = {
+        quantity: parseFloat(result.composition[key].teneur.replace(/,/g, '.')) || 0,
+        unit: nutrient.match(regExp).pop()
+      };
     }
   });
   return neededNutrient;
@@ -49,7 +75,7 @@ router.get('/:id', jwtMiddleware, async (req, res) => {
     const neededNutrient = parsAlim(result);
     res.json({
       error: false,
-      neededNutrient,
+      nutriments: neededNutrient,
     });
   } catch (err) {
     console.error(err);
