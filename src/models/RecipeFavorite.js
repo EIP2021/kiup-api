@@ -13,7 +13,6 @@ module.exports = sequelize.define('RecipeFavorite', {
     primaryKey: true,
   },
 },
-  {
-    timestamps: false
-  },
-);
+{
+  timestamps: false,
+});
