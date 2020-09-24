@@ -16,13 +16,13 @@ const router = express.Router();
 router.get('/', jwtMiddleware, async (req, res) => {
   const stats = [];
   const { id } = req.user;
-  const { weight } = await models.UserInfo.findOne({
-    where: {
-      id,
-    },
-  });
+  // const { weight } = await models.UserInfo.findOne({
+  //   where: {
+  //     id,
+  //   },
+  // });
   let recipe = {};
-  const maxProteins = 0.6 * weight;
+  const maxProteins = 0.6 * 75;
   let proteins = 0;
   let salt = 0;
   let potassium = 0;
