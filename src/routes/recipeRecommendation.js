@@ -13,7 +13,7 @@ const jwtMiddleware = exjwt({
 
 const router = express.Router();
 
-router.get('/:uid', jwtMiddleware, async (req, res) => {
+router.get('/', jwtMiddleware, async (req, res) => {
   const stats = [];
   const { id } = req.user;
   const { weight } = await models.UserInfo.findOne({
