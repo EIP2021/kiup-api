@@ -21,7 +21,7 @@ router.get('/', jwtMiddleware, async (req, res) => {
   //     id,
   //   },
   // });
-  let recipe = {};
+  const recipe = [];
   const maxProteins = 0.6 * 75;
   let proteins = 0;
   let salt = 0;
@@ -47,27 +47,27 @@ router.get('/', jwtMiddleware, async (req, res) => {
     });
 
     if (proteins <= maxProteins) {
-      recipe = await models.Recipe.findOne({
+      recipe.push(await models.Recipe.findOne({
         where: {
           tag: 'strong proteins',
         },
-      });
+      }));
     } else if (salt >= 0.6) {
-      recipe = await models.Recipe.findOne({
+      recipe.push(await models.Recipe.findOne({
         where: {
           tag: 'weak salt',
         },
-      });
+      }));
     } else {
-      Math.floor(Math.random() * 2) === 0 ? recipe = await models.Recipe.findOne({
+      Math.floor(Math.random() * 2) === 0 ? recipe.push(await models.Recipe.findOne({
         where: {
           tag: 'weak potassium',
         },
-      }) : recipe = await models.Recipe.findOne({
+      })) : recipe.push(await models.Recipe.findOne({
         where: {
           tag: 'weak phosphorus',
         },
-      });
+      }));
     }
   } else {
     const oldRecommendation = fileSystem.readFile('src/Recipes/oldRecommendations.json', true);
@@ -77,7 +77,7 @@ router.get('/', jwtMiddleware, async (req, res) => {
       recipeId = Math.floor(Math.random() * recipes.length);
     }
 
-    recipe = recipes[recipeId];
+    recipe.push(recipes[recipeId]);
 
     fileSystem.writeFile('src/Recipes/oldRecommendations.json',
       {
