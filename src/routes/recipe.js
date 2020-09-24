@@ -13,11 +13,8 @@ const router = express.Router();
 
 const isRecipeValid = (recipe) => {
   console.log(recipe);
-  if (!recipe.name || !recipe.description || !recipe.prepTime
-    || !Array.isArray(recipe.steps) || !Array.isArray(recipe.ingredients)) {
-    return false;
-  }
-  return true;
+  return !(!recipe.name || !recipe.description || !recipe.prepTime
+      || !Array.isArray(recipe.steps) || !Array.isArray(recipe.ingredients));
 };
 
 router.post('/', jwtMiddleware, async (req, res) => {
