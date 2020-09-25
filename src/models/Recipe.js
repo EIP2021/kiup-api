@@ -28,6 +28,16 @@ module.exports = sequelize.define('Recipe', {
   },
   ingredients: Sequelize.JSON,
   steps: Sequelize.JSON,
+  tag: {
+    type: Sequelize.STRING,
+  },
+  rating: {
+    type: Sequelize.INTEGER,
+  },
+  comments: Sequelize.JSON,
+  people: {
+    type: Sequelize.INTEGER,
+  },
 },
 {
   timestamps: false,

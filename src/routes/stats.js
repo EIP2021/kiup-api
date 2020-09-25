@@ -1,6 +1,6 @@
 const express = require('express');
 const exjwt = require('express-jwt');
-const Op = require('sequelize');
+const {Op} = require('sequelize');
 const models = require('../models');
 const error = require('../error');
 const config = require('../../config.json');
@@ -44,6 +44,19 @@ router.get('/stats', jwtMiddleware, async (req, res) => {
 
       allConsumptions.forEach((element) => {
         if (new Date(element.date) >= firstDayOfMonth && new Date(element.date) <= lastDayOfMonth) {
+          stats.push(element.stats);
+        }
+      });
+    } else if (scope === 'week') {
+      const today = new Date();
+      const oneWeekBefore = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+      const allConsumptions = await models.Consumption.findAll({
+        where: {
+          userId: id,
+        },
+      });
+      allConsumptions.forEach((element) => {
+        if (new Date(element.date) >= oneWeekBefore && new Date(element.date) <= today) {
           stats.push(element.stats);
         }
       });
