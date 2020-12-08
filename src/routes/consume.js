@@ -90,6 +90,39 @@ router.get('/history', jwtMiddleware, async (req, res) => {
   }
 });
 
+router.post('/history/:entryId', jwtMiddleware, async (req, res) => {
+  const numberReg = /^\d+$/;
+  const { body } = req;
+  if (req.params.entryId.match(numberReg) === null || !body) {
+    return error(400, 'Invalid history entry id', res);
+  }
+  const { id } = req.user;
+  if (!id) {
+    return error(400, 'Invalid request', res);
+  }
+  try {
+    const entry = await models.History.findOne({
+      id: req.params.entryId,
+      userId: id,
+    });
+    if (!entry) {
+      return error(400, 'Could not find entry.', res);
+    }
+    const result = await entry.update({
+      ...body,
+    });
+    if (!result) {
+      return error(500, 'Failed to delete entry', res);
+    }
+    return res.json({
+      error: false,
+    });
+  } catch (err) {
+    console.error(err);
+    return error(500, 'Internal server error', res);
+  }
+});
+
 router.use(unauth);
 
 module.exports = router;
