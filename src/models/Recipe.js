@@ -38,6 +38,9 @@ module.exports = sequelize.define('Recipe', {
   people: {
     type: Sequelize.INTEGER,
   },
+  image: {
+    type: Sequelize.STRING,
+  },
 },
 {
   timestamps: false,
