@@ -12,7 +12,6 @@ const jwtMiddleware = exjwt({
 const router = express.Router();
 
 const isRecipeValid = (recipe) => {
-  console.log(recipe);
   return !(
     !recipe.name ||
     !recipe.description ||
@@ -44,6 +43,11 @@ router.post('/', jwtMiddleware, async (req, res) => {
       cookTime: req.body.cookTime,
       ingredients: req.body.ingredients,
       steps: req.body.steps,
+      tag: req.body.tag,
+      rating: req.body.rating,
+      comments: req.body.comments,
+      people: req.body.people,
+      image: req.body.image,
     });
     if (!recipe) {
       throw new Error("Couldn't create recipe");
