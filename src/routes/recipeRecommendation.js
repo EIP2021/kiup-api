@@ -53,21 +53,21 @@ router.get('/', jwtMiddleware, async (req, res) => {
         },
       });
     } else if (salt >= 0.6) {
-      recipe.push(await models.Recipe.findAll({
+      recipe = await models.Recipe.findAll({
         where: {
           tag: 'weak salt',
         },
-      }));
+      });
     } else {
-      Math.floor(Math.random() * 2) === 0 ? recipe.push(await models.Recipe.findAll({
+      recipe = Math.floor(Math.random() * 2) === 0 ? await models.Recipe.findAll({
         where: {
           tag: 'weak potassium',
         },
-      })) : recipe.push(await models.Recipe.findAll({
+      }) : await models.Recipe.findAll({
         where: {
           tag: 'weak phosphorus',
         },
-      }));
+      });
     }
   } else {
     const oldRecommendation = fileSystem.readFile('src/Recipes/oldRecommendations.json', true);
