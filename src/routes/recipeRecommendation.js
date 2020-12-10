@@ -21,7 +21,7 @@ router.get('/', jwtMiddleware, async (req, res) => {
   //     id,
   //   },
   // });
-  const recipe = [];
+  let recipe = [];
   const maxProteins = 0.6 * 75;
   let proteins = 0;
   let salt = 0;
@@ -38,6 +38,7 @@ router.get('/', jwtMiddleware, async (req, res) => {
       stats.push(element.stats);
     }
   });
+
   if (stats.length) {
     stats.forEach((element) => {
       proteins += element.proteins;
@@ -45,25 +46,24 @@ router.get('/', jwtMiddleware, async (req, res) => {
       potassium += element.potassium;
       phosphorus += element.phosphorus;
     });
-
     if (proteins <= maxProteins) {
-      recipe.push(await models.Recipe.findOne({
+      recipe = await models.Recipe.findAll({
         where: {
           tag: 'strong proteins',
         },
-      }));
+      });
     } else if (salt >= 0.6) {
-      recipe.push(await models.Recipe.findOne({
+      recipe.push(await models.Recipe.findAll({
         where: {
           tag: 'weak salt',
         },
       }));
     } else {
-      Math.floor(Math.random() * 2) === 0 ? recipe.push(await models.Recipe.findOne({
+      Math.floor(Math.random() * 2) === 0 ? recipe.push(await models.Recipe.findAll({
         where: {
           tag: 'weak potassium',
         },
-      })) : recipe.push(await models.Recipe.findOne({
+      })) : recipe.push(await models.Recipe.findAll({
         where: {
           tag: 'weak phosphorus',
         },
