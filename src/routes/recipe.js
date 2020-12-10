@@ -44,6 +44,10 @@ router.post('/', jwtMiddleware, async (req, res) => {
       cookTime: req.body.cookTime,
       ingredients: req.body.ingredients,
       steps: req.body.steps,
+      tag: req.body.tag,
+      rating: req.body.rating,
+      comments: req.body.comments,
+      people: req.body.people,
     });
     if (!recipe) {
       throw new Error("Couldn't create recipe");
