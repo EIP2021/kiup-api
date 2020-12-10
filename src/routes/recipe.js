@@ -165,6 +165,7 @@ router.post('/edit/:id', jwtMiddleware, async (req, res) => {
       cookTime: req.body.cookTime,
       ingredients: req.body.ingredients,
       steps: req.body.steps,
+      comments: req.body.comments,
     });
     return res.json({
       error: false,
