@@ -1,6 +1,7 @@
+/* eslint-disable no-loop-func */
 const express = require('express');
 const exjwt = require('express-jwt');
-const {Op} = require('sequelize');
+const moment = require('moment');
 const models = require('../models');
 const error = require('../error');
 const config = require('../../config.json');
@@ -31,38 +32,9 @@ router.get('/stats', jwtMiddleware, async (req, res) => {
       if (stats) {
         stats = stats.stats;
       }
-    } else if (scope === 'month') {
-      const firstDayOfMonth = new Date(date);
-      const lastDayOfMonth = new Date(firstDayOfMonth.getFullYear(),
-        firstDayOfMonth.getMonth() + 1, 0);
-
-      const allConsumptions = await models.Consumption.findAll({
-        where: {
-          userId: id,
-        },
-      });
-
-      allConsumptions.forEach((element) => {
-        if (new Date(element.date) >= firstDayOfMonth && new Date(element.date) <= lastDayOfMonth) {
-          stats.push(element.stats);
-        }
-      });
     } else if (scope === 'week') {
-      const today = new Date();
-      const oneWeekBefore = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
-      const allConsumptions = await models.Consumption.findAll({
-        where: {
-          userId: id,
-        },
-      });
-      allConsumptions.forEach((element) => {
-        if (new Date(element.date) >= oneWeekBefore && new Date(element.date) <= today) {
-          stats.push(element.stats);
-        }
-      });
-    } else if (scope === 'year') {
-      const lastDayOfYear = new Date(new Date(new Date(date)).getFullYear(), 11, 32);
-      const firstDayOfYear = new Date(new Date(new Date(date)).getFullYear(), 0, 1);
+      const firstDayOfWeek = moment().startOf('isoWeek').toDate();
+      const lastDayOfWeek = moment().endOf('isoWeek').toDate();
 
       const allConsumptions = await models.Consumption.findAll({
         where: {
@@ -70,11 +42,77 @@ router.get('/stats', jwtMiddleware, async (req, res) => {
         },
       });
 
-      allConsumptions.forEach((element) => {
-        if (new Date(element.date) >= firstDayOfYear && new Date(element.date) <= lastDayOfYear) {
-          stats.push(element.stats);
+      stats = {
+        potassium: [],
+        proteins: [],
+        phosphorus: [],
+        salt: [],
+      };
+      for (
+        let i = moment(firstDayOfWeek);
+        i.isBefore(lastDayOfWeek);
+        i.add(1, 'day')
+      ) {
+        let f = false;
+        allConsumptions.forEach((c) => {
+          if (i.format('YYYY-MM-DD') === c.date) {
+            f = true;
+            stats.potassium.push(c.stats.potassium);
+            stats.proteins.push(c.stats.proteins);
+            stats.salt.push(c.stats.salt);
+            stats.phosphorus.push(c.stats.phosphorus);
+          }
+        });
+        if (!f) {
+          stats.potassium.push(0);
+          stats.proteins.push(0);
+          stats.salt.push(0);
+          stats.phosphorus.push(0);
         }
+      }
+    } else if (scope === 'month') {
+      const firstDayOfMonth = moment().startOf('month').toDate();
+      const lastDayOfMonth = moment().endOf('month').toDate();
+
+      const allConsumptions = await models.Consumption.findAll({
+        where: {
+          userId: id,
+        },
       });
+
+      stats = allConsumptions.filter((el) => {
+        const d = new Date(el.date);
+        return d >= firstDayOfMonth && d <= lastDayOfMonth;
+      });
+
+      stats = {
+        potassium: [],
+        proteins: [],
+        phosphorus: [],
+        salt: [],
+      };
+      for (
+        let i = moment(firstDayOfMonth);
+        i.isBefore(lastDayOfMonth);
+        i.add(1, 'day')
+      ) {
+        let f = false;
+        allConsumptions.forEach((c) => {
+          if (i.format('YYYY-MM-DD') === c.date) {
+            f = true;
+            stats.potassium.push(c.stats.potassium);
+            stats.proteins.push(c.stats.proteins);
+            stats.salt.push(c.stats.salt);
+            stats.phosphorus.push(c.stats.phosphorus);
+          }
+        });
+        if (!f) {
+          stats.potassium.push(0);
+          stats.proteins.push(0);
+          stats.salt.push(0);
+          stats.phosphorus.push(0);
+        }
+      }
     } else {
       return error(400, 'Unsupported scope', res);
     }
