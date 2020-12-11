@@ -153,7 +153,7 @@ router.post('/edit/:id', jwtMiddleware, async (req, res) => {
       );
     }
     const recipe = await models.Recipe.findOne({
-      where: { id: req.params.id, uid: id },
+      where: { id: req.params.id },
     });
     if (!recipe) {
       throw new Error("Couldn't find recipe");
